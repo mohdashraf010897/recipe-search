@@ -1,20 +1,19 @@
+import { Spin } from "antd";
 import React, { useState, useEffect, useRef } from "react";
 
-const InfiniteScrollContainer = ({ children, callNextPage }) => {
+let prevY = 0;
+const InfiniteScrollContainer = ({ children, callNextPage, loading }) => {
   let loadingRef = useRef(null);
 
-  const [loading, setLoading] = useState(false);
-  const [prevY, setPrevY] = useState(0);
-  const [currentPage, setCurrentPage] = useState(0);
   let observer;
 
   const handleObserver = (entities, observer) => {
     const y = entities[0].boundingClientRect.y;
+
     if (prevY > y) {
-      callNextPage(currentPage + 1);
-      setCurrentPage(currentPage + 1);
+      callNextPage();
     }
-    setPrevY(y);
+    prevY = y;
   };
   useEffect(() => {
     var options = {
@@ -27,17 +26,33 @@ const InfiniteScrollContainer = ({ children, callNextPage }) => {
     observer.observe(loadingRef);
   }, []);
 
+  // useEffect(() => {
+
+  //   if(resetScroll){// set scroll position in px
+  //   loadingRef.scrollLeft = 300;
+  //   loadingRef.scrollTop = 500;}
+  // }, [resetScroll])
+
   const loadingCSS = {
     height: "100px",
     margin: "30px",
+    padding: 50,
   };
   const loadingTextCSS = { display: loading ? "block" : "none" };
 
   return (
-    <div id="under-observation">
+    <div
+      id="under-observation"
+      style={{ maxHeight: "70vh", overflowY: "scroll", overflowX: "hidden" }}
+    >
       <>{children}</>
       <div ref={(ref) => (loadingRef = ref)} style={loadingCSS}>
-        <span style={loadingTextCSS}>Loading...</span>
+        <Spin
+          delay={500}
+          spinning={loading}
+          size="large"
+          tip="Fetching Results"
+        ></Spin>
       </div>
     </div>
   );

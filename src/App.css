@@ -36,3 +36,44 @@
     transform: rotate(360deg);
   }
 }
+
+.layout {
+  min-height: 100vh;
+  padding: 3rem;
+}
+
+.filter-row {
+  padding-top: 70px;
+}
+.result-time-status {
+  z-index: 1;
+  font-size: 1rem;
+  font-style: italic;
+}
+.result-time-status p {
+  margin-bottom: 0;
+}
+.result-row {
+  padding-top: 70px;
+}
+
+@media screen and (max-width: 600px) {
+  .layout {
+    padding: 0;
+  }
+  .filter-row {
+    padding-top: 35px;
+  }
+  .result-time-status {
+    padding-top: 25px;
+  }
+  .result-row {
+    padding-top: 25px;
+  }
+}
+
+@media screen and (max-width: 1000px) {
+  .result-time-status {
+    padding-top: 25px;
+  }
+}

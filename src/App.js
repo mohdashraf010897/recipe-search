@@ -17,6 +17,7 @@ import {
   SearchComponent,
 } from "@appbaseio/react-searchbox";
 import ReactPaginate from "react-paginate";
+import "./App.css";
 
 import "./styles.css";
 import Layout from "antd/lib/layout/layout";
@@ -33,18 +34,18 @@ import InfiniteScrollContainer from "./InfiniteScrollContainer";
 
 const { Link } = Anchor;
 const { CheckableTag } = Tag;
-
+let pageChange = false,
+  currentPage = 0;
 export default () => {
-  const [filterQuery, setFilterQuery] = useState("");
-
   const [fullRecipe, setfullRecipe] = useState({
     isModalVisible: false,
     recipeItem: {},
   });
 
+  const [showAllFilters, setShowAllFilters] = useState(false);
   return (
     <>
-      <Layout style={{ minHeight: "100vh", padding: "3rem" }}>
+      <Layout className="layout">
         {" "}
         <SearchBase
           index="recipes-demo"
@@ -74,54 +75,53 @@ export default () => {
               </span>
             </h2>
 
-            <SearchBox
-              id="search-component"
-              dataField={[
-                {
-                  field: "title",
-                  weight: 1,
-                },
-                {
-                  field: "title.search",
-                  weight: 2,
-                },
-
-                {
-                  field: "NER.keyword",
-                  weight: 4,
-                },
-                {
-                  field: "ingredients.keyword",
-                  weight: 2,
-                },
-              ]}
-              title="Search"
-              placeholder="Yummy Pasta..."
-              autosuggest={false}
-              size={10}
-              debounce={100}
-              queryFormat="or"
-              fuzziness="AUTO"
-              showClear
-              showVoiceSearch
-              URLParams
-              className="custom-class"
-              showDistinctSuggestions
-              enablePopularSuggestions={false}
-              enableRecentSearches={false}
-              iconPosition="left"
-              style={{ paddingBottom: 10 }}
-            />
-            <Row justify="center" gutter={(24, 24)}>
-              <Col
-                style={{ paddingTop: "2.5rem" }}
-                xs={20}
-                sm={20}
-                md={24}
-                lg={6}
-                xl={6}
-              >
+            <Row gutter="24" justify="center">
+              <Col xs={20} sm={20} md={24} lg={16} xl={16}>
                 <SearchBox
+                  clearFiltersOnQueryChange
+                  id="search-component"
+                  dataField={[
+                    {
+                      field: "title",
+                      weight: 1,
+                    },
+                    {
+                      field: "title.search",
+                      weight: 2,
+                    },
+
+                    {
+                      field: "NER.keyword",
+                      weight: 4,
+                    },
+                    {
+                      field: "ingredients.keyword",
+                      weight: 2,
+                    },
+                  ]}
+                  title="Search"
+                  placeholder="Yummy Pasta..."
+                  autosuggest={false}
+                  size={10}
+                  debounce={100}
+                  queryFormat="or"
+                  fuzziness="AUTO"
+                  showClear
+                  showVoiceSearch
+                  URLParams
+                  className="result-search-box"
+                  showDistinctSuggestions
+                  enablePopularSuggestions={false}
+                  enableRecentSearches={false}
+                  iconPosition="left"
+                  style={{ paddingBottom: 10 }}
+                />
+              </Col>
+            </Row>
+            <Row justify="center" gutter={(24, 24)} className="filter-row">
+              <Col xs={20} sm={20} md={24} lg={6} xl={6}>
+                <SearchBox
+                  clearFiltersOnQueryChange
                   customQuery={() => ({
                     timeout: "1s",
                   })}
@@ -174,25 +174,23 @@ export default () => {
                   aggregationSize={30}
                   dataField="NER.keyword"
                   subscribeTo={["aggregationData", "requestStatus", "value"]}
-                  URLParams
+                  // URLParams
                   react={{
                     and: ["search-component", "filter-search-component"],
                   }}
+                  // onValueChange={(next, prev) =>
+                  //   console.log("next ingredient", next)
+                  // }
                   // To initialize with default value
                   value={[]}
                   render={({ aggregationData, loading, value, setValue }) => {
-                    console.log("value", value, aggregationData);
-                    const responseValue = value || []; // full objects
-                    const responseValueKeys = responseValue.map(
-                      (item) => item._key
-                    );
+                    // console.log("value", value, aggregationData);
+                    const responseValue = value || [];
                     const sortedFilters = [...responseValue];
 
                     aggregationData?.data?.map((item) => {
-                      if (
-                        !responseValueKeys.includes(item._key.toLowerCase())
-                      ) {
-                        sortedFilters.push(item);
+                      if (!responseValue.includes(item._key.toLowerCase())) {
+                        sortedFilters.push(item._key);
                       }
                     });
 
@@ -211,55 +209,75 @@ export default () => {
                             </Col>
                           </Row>
                         ) : (
-                          sortedFilters.map((item) => {
-                            const isChecked = value
-                              ? responseValueKeys.includes(item._key)
-                              : false;
-                            return (
-                              <div className="list-item" key={item._key}>
-                                <CheckableTag
-                                  key={item._key}
-                                  checked={isChecked}
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gridGap: "6px",
-                                    textTransform: "capitalize",
-                                    fontSize: "13px",
-                                    ...(!isChecked && {
-                                      backgroundColor: "rgb(204, 204, 204)",
-                                    }),
-                                  }}
-                                  onChange={(checked) => {
-                                    let values = value || [];
-                                    if (!checked) {
-                                      values = [
-                                        ...values.filter(
-                                          (valueItem) =>
-                                            valueItem._key != item._key
-                                        ),
-                                      ];
-                                    } else {
-                                      values.push(item);
-                                    }
-                                    // Set filter value and trigger custom query
-                                    setValue(values, {
-                                      triggerDefaultQuery: false,
-                                      triggerCustomQuery: true,
-                                      stateChanges: true,
-                                    });
-                                  }}
-                                >
-                                  {isChecked ? (
-                                    <MinusCircleTwoTone />
-                                  ) : (
-                                    <PlusCircleTwoTone />
-                                  )}{" "}
-                                  {item._key} ({item._doc_count})
-                                </CheckableTag>
-                              </div>
-                            );
-                          })
+                          <>
+                            {sortedFilters
+                              .slice(
+                                0,
+                                Math.max(
+                                  7,
+                                  showAllFilters ? sortedFilters.length : 7
+                                )
+                              )
+                              .map((item) => {
+                                const isChecked = value
+                                  ? responseValue.includes(item)
+                                  : false;
+                                return (
+                                  <div className="list-item" key={item}>
+                                    <CheckableTag
+                                      checked={isChecked}
+                                      style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gridGap: "6px",
+                                        textTransform: "capitalize",
+                                        fontSize: "13px",
+                                        ...(!isChecked && {
+                                          backgroundColor: "rgb(204, 204, 204)",
+                                        }),
+                                      }}
+                                      onChange={(checked) => {
+                                        let values = value || [];
+                                        if (!checked) {
+                                          values = [
+                                            ...values.filter(
+                                              (valueItem) => valueItem != item
+                                            ),
+                                          ];
+                                        } else {
+                                          values.push(item);
+                                        }
+                                        // Set filter value and trigger custom query
+                                        setValue(values, {
+                                          triggerDefaultQuery: false,
+                                          triggerCustomQuery: true,
+                                          stateChanges: true,
+                                        });
+                                      }}
+                                    >
+                                      {isChecked ? (
+                                        <MinusCircleTwoTone />
+                                      ) : (
+                                        <PlusCircleTwoTone />
+                                      )}{" "}
+                                      {item}
+                                    </CheckableTag>
+                                  </div>
+                                );
+                              })}
+
+                            <Col span={24}>
+                              <Button
+                                type="primary"
+                                onClick={() =>
+                                  setShowAllFilters(!showAllFilters)
+                                }
+                                style={{ fontWeight: "bold" }}
+                              >
+                                Show {showAllFilters ? "Less" : "More"}
+                              </Button>
+                            </Col>
+                          </>
                         )}
                       </div>
                     );
@@ -272,19 +290,24 @@ export default () => {
                   id="result-component"
                   URLParams
                   highlight
-                  highlightField={["title.search"]}
                   defaultQuery={() => {
                     return { track_total_hits: true };
                   }}
                   dataField={["title"]}
                   aggregationField="title.keyword"
-                  // size={10}
-
+                  size={10}
                   aggregationSize={10}
                   react={{
                     and: ["search-component", "ingredient-filter"],
                   }}
-                  subscribeTo={["aggregationData", "value"]}
+                  subscribeTo={["aggregationData", "requestStatus"]}
+                  onAggregationData={(next, prev) => {
+                    // console.log("next", next);
+                  }}
+                  preserveResults={true}
+                  onQueryChange={() => {
+                    // console.log("QUERY GOT CHANGED");
+                  }}
                 >
                   {({
                     results,
@@ -293,210 +316,219 @@ export default () => {
                     setValue,
                     setFrom,
                     aggregationData,
-                    value,
                   }) => {
-                    console.log(
-                      "aggregationData",
-                      aggregationData,
-                      results,
-                      size,
-                      value
-                    );
-
+                    console.log("aggregationData", aggregationData);
+                    console.log("results", results);
+                    // if (
+                    //   (concatData.length == 0 || !!pageChange) &&
+                    //   results.data.length > 0
+                    // ) {
+                    //   console.log("PREV", concatData, results.data);
+                    //   setConcatData([...concatData, ...results.data]);
+                    //   console.log("state changed");
+                    //   pageChange = false;
+                    // }
                     return (
-                      <div className="result-list-container">
-                        {/* {loading ? (
+                      <>
+                        {" "}
+                        {!aggregationData.data.length ? (
+                          <Empty
+                            description={
+                              <span>
+                                {loading
+                                  ? "Fetching Data!"
+                                  : "No Results Found!"}
+                              </span>
+                            }
+                          ></Empty>
+                        ) : (
+                          <Col span={24} className="result-time-status">
+                            {" "}
+                            <p>
+                              <strong style={{ color: "red" }}>
+                                {results.numberOfResults}
+                              </strong>{" "}
+                              results found in{" "}
+                              <strong style={{ color: "red" }}>
+                                {results.time}
+                              </strong>{" "}
+                              ms
+                            </p>
+                          </Col>
+                        )}
+                        <InfiniteScrollContainer
+                          callNextPage={() => {
+                            if (
+                              Math.floor(results.numberOfResults / size) >=
+                              currentPage
+                            ) {
+                              currentPage++;
+                              pageChange = true;
+                              setFrom((currentPage + 1) * size);
+                            }
+                          }}
+                          loading={loading}
+                        >
+                          <div className="result-list-container">
+                            {/* {loading ? (
                       <div>Loading Results ...</div>
                     ) : ( */}
-                        <Spin spinning={loading}>
-                          <Row
-                            gutter={[16, 16]}
-                            justify="start"
-                            wrap
-                            justify="center"
-                          >
-                            {!results.data.length ? (
-                              <Empty
-                                description={
-                                  <span>
-                                    {loading
-                                      ? "Fetching Data!"
-                                      : "No Results Found!"}
-                                  </span>
-                                }
-                              ></Empty>
-                            ) : (
-                              <Col span={24}>
-                                {" "}
-                                <p>
-                                  {results.numberOfResults} results found in{" "}
-                                  {results.time}ms
-                                </p>
-                              </Col>
-                            )}
-                            {/* <InfiniteScrollContainer
-                              callNextPage={(pageNo) =>
-                                setFrom((pageNo + 1) * size)
-                              }
-                            > */}{" "}
-                            {results.data.map((item) => (
-                              <Col flex="0 0 auto" key={item._id}>
-                                {" "}
-                                <Card
-                                  style={{ width: 300, height: 250 }}
-                                  bodyStyle={{ padding: "10px 0" }}
-                                  title={
-                                    <div
-                                      style={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        height: "40px",
-                                      }}
-                                    >
-                                      <h3
-                                        style={{
-                                          // color: `hsla(${
-                                          //   Math.random() * 360
-                                          // }, 100%, 50%, 1)`,
-                                          height: "auto",
-                                          whiteSpace: "pre-wrap",
-                                          marginBottom: "0px",
-                                          lineHeight: "22px",
-                                          fontSize: "14px",
-                                          // paddingTop: "14px",
-                                          color: "#ff7f7f",
-                                        }}
-                                        dangerouslySetInnerHTML={{
-                                          __html: item.title,
-                                        }}
-                                      ></h3>
-                                    </div>
-                                  }
-                                >
-                                  <Meta
-                                    style={{
-                                      textAlign: "left",
-                                      height: 104,
-                                      overflow: "hidden",
-                                      display: "-webkit-box",
-                                      webkitLineClamp: 4,
-                                      webkitBoxOrient: "vertical",
-                                      padding: "5px 15px",
-                                    }}
-                                    description={
-                                      <span
-                                        style={{
-                                          display: "flex",
-                                          alignItems: "center",
-                                          gridColumnGap: "14px",
-                                          flexWrap: "wrap",
-                                          gridRowGap: "4px",
-                                        }}
+                            <Spin spinning={loading}>
+                              <Row
+                                gutter={[16, 16]}
+                                justify="start"
+                                wrap
+                                justify="center"
+                                className="result-row"
+                              >
+                                {aggregationData.data?.map((itemRaw) => {
+                                  const item = itemRaw.hits.hits[0]._source;
+                                  return (
+                                    <Col flex="0 0 auto" key={item.id}>
+                                      {" "}
+                                      <Card
+                                        style={{ width: 300, height: 250 }}
+                                        bodyStyle={{ padding: "10px 0" }}
+                                        title={
+                                          <div
+                                            style={{
+                                              display: "flex",
+                                              alignItems: "center",
+                                              height: "40px",
+                                            }}
+                                          >
+                                            <h3
+                                              style={{
+                                                // color: `hsla(${
+                                                //   Math.random() * 360
+                                                // }, 100%, 50%, 1)`,
+                                                height: "auto",
+                                                whiteSpace: "pre-wrap",
+                                                marginBottom: "0px",
+                                                lineHeight: "22px",
+                                                fontSize: "14px",
+                                                // paddingTop: "14px",
+                                                color: "#ff7f7f",
+                                              }}
+                                              dangerouslySetInnerHTML={{
+                                                __html: item.title
+                                                  .trim()
+                                                  .replace("/(*)/g", ""),
+                                              }}
+                                            ></h3>
+                                          </div>
+                                        }
                                       >
-                                        {item.NER.map((item) => {
-                                          return (
+                                        <Meta
+                                          style={{
+                                            textAlign: "left",
+                                            height: 104,
+                                            overflow: "hidden",
+                                            display: "-webkit-box",
+                                            webkitLineClamp: 4,
+                                            webkitBoxOrient: "vertical",
+                                            padding: "5px 15px",
+                                          }}
+                                          description={
                                             <span
                                               style={{
                                                 display: "flex",
                                                 alignItems: "center",
-                                                gridGap: "4px",
+                                                gridColumnGap: "14px",
+                                                flexWrap: "wrap",
+                                                gridRowGap: "4px",
                                               }}
                                             >
-                                              <img
-                                                src={IngredientIcon}
-                                                height="15px"
-                                              />
-                                              {item[0].toUpperCase() +
-                                                item.substring(1)}
+                                              {item?.NER?.map((item, idx) => {
+                                                return (
+                                                  <span
+                                                    style={{
+                                                      display: "flex",
+                                                      alignItems: "center",
+                                                      gridGap: "4px",
+                                                    }}
+                                                    key={idx}
+                                                  >
+                                                    <img
+                                                      src={IngredientIcon}
+                                                      height="15px"
+                                                    />
+                                                    {item[0].toUpperCase() +
+                                                      item.substring(1)}
+                                                  </span>
+                                                );
+                                              })}
                                             </span>
-                                          );
-                                        })}
-                                      </span>
-                                    }
-                                  />
-                                  <Divider style={{ margin: "12px 0 10px" }} />
-                                  <Meta
-                                    style={{
-                                      textAlign: "left",
-                                      padding: "7px",
-                                    }}
-                                    description={
-                                      <Row justify="space-between">
-                                        <Col
-                                          span={12}
+                                          }
+                                        />
+                                        <Divider
+                                          style={{ margin: "12px 0 10px" }}
+                                        />
+                                        <Meta
                                           style={{
-                                            display: "flex",
-                                            alignItems: "center",
+                                            textAlign: "left",
+                                            padding: "7px",
                                           }}
-                                        >
-                                          {" "}
-                                          <span>
-                                            <LinkOutlined />{" "}
-                                            <a
-                                              href={"https://" + item.link}
-                                              target="_blank"
-                                            >
-                                              {item.link.split(".")[1]}
-                                            </a>
-                                          </span>
-                                        </Col>
-                                        <Col span={8} pull={4}>
-                                          <Tooltip title="See Full Recipe!">
-                                            <Button
-                                              onClick={() =>
-                                                setfullRecipe({
-                                                  isModalVisible: true,
-                                                  recipeItem: item,
-                                                })
-                                              }
-                                              style={{ paddingLeft: "10px" }}
-                                              icon={
-                                                <img
-                                                  src={OvenGloveIcon}
-                                                  height="20px"
-                                                  style={{
-                                                    marginRight: "7px",
-                                                  }}
-                                                />
-                                              }
-                                            >
-                                              View Recipe
-                                            </Button>
-                                          </Tooltip>
-                                        </Col>
-                                      </Row>
-                                    }
-                                  />
-                                </Card>
-                              </Col>
-                            ))}
-                            {/* </InfiniteScrollContainer> */}
-                          </Row>
-                        </Spin>
-                        {/* )} */}
-                        <ReactPaginate
-                          pageCount={Math.floor(results.numberOfResults / size)}
-                          onPageChange={({ selected }) =>
-                            setFrom((selected + 1) * size)
-                          }
-                          previousLabel="previous"
-                          nextLabel="next"
-                          breakLabel="..."
-                          breakClassName="break-me"
-                          marginPagesDisplayed={2}
-                          pageRangeDisplayed={5}
-                          subContainerClassName="pages pagination"
-                          breakLinkClassName="page-link"
-                          containerClassName="pagination"
-                          pageClassName="page-item"
-                          pageLinkClassName="page-link"
-                          previousClassName="page-item"
-                          previousLinkClassName="page-link"
-                          nextClassName="page-item"
-                          nextLinkClassName="page-link"
-                          activeClassName="active"
-                        />
-                      </div>
+                                          description={
+                                            <Row justify="space-between">
+                                              <Col
+                                                span={12}
+                                                style={{
+                                                  display: "flex",
+                                                  alignItems: "center",
+                                                }}
+                                              >
+                                                {" "}
+                                                <span>
+                                                  <LinkOutlined />{" "}
+                                                  <a
+                                                    href={
+                                                      "https://" + item.link
+                                                    }
+                                                    target="_blank"
+                                                  >
+                                                    {item?.link?.split(".")[1]}
+                                                  </a>
+                                                </span>
+                                              </Col>
+                                              <Col span={8} pull={4}>
+                                                <Tooltip title="See Full Recipe!">
+                                                  <Button
+                                                    onClick={() =>
+                                                      setfullRecipe({
+                                                        isModalVisible: true,
+                                                        recipeItem: item,
+                                                      })
+                                                    }
+                                                    style={{
+                                                      paddingLeft: "10px",
+                                                    }}
+                                                    icon={
+                                                      <img
+                                                        src={OvenGloveIcon}
+                                                        height="20px"
+                                                        style={{
+                                                          marginRight: "7px",
+                                                        }}
+                                                      />
+                                                    }
+                                                  >
+                                                    View Recipe
+                                                  </Button>
+                                                </Tooltip>
+                                              </Col>
+                                            </Row>
+                                          }
+                                        />
+                                      </Card>
+                                    </Col>
+                                  );
+                                })}
+                              </Row>
+                            </Spin>{" "}
+                          </div>
+                        </InfiniteScrollContainer>
+                      </>
                     );
                   }}
                 </SearchComponent>
