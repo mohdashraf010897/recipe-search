@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Row,
   Col,
@@ -16,33 +16,48 @@ import {
   SearchBase,
   SearchComponent,
 } from "@appbaseio/react-searchbox";
-import ReactPaginate from "react-paginate";
 import "./App.css";
 
 import "./styles.css";
 import Layout from "antd/lib/layout/layout";
 import Meta from "antd/lib/card/Meta";
-import {
-  LinkOutlined,
-  PlusCircleTwoTone,
-  MinusCircleTwoTone,
-} from "@ant-design/icons";
+import { PlusCircleTwoTone, MinusCircleTwoTone } from "@ant-design/icons";
 import IngredientIcon from "./assets/images/ingredients.svg";
 import OvenGloveIcon from "./assets/images/oven-glove.svg";
 import RecipeFullView from "./RecipeFullView.js";
 import InfiniteScrollContainer from "./InfiniteScrollContainer";
 
-const { Link } = Anchor;
 const { CheckableTag } = Tag;
 let pageChange = false,
   currentPage = 0;
 export default () => {
+  const [isMobileView, setIsMobileView] = useState(false);
   const [fullRecipe, setfullRecipe] = useState({
     isModalVisible: false,
     recipeItem: {},
   });
 
+  const [showFilterOptions, setShowFilterOptions] = useState(false);
   const [showAllFilters, setShowAllFilters] = useState(false);
+
+  useEffect(() => {
+    if (window?.innerWidth <= 600) {
+      !isMobileView && setIsMobileView(true);
+    }
+
+    const windowResizeHandler = () => {
+      if (window?.innerWidth <= 600) {
+        !isMobileView && setIsMobileView(true);
+      } else {
+        isMobileView && setIsMobileView(false);
+      }
+    };
+    window.addEventListener("resize", windowResizeHandler);
+
+    return () => {
+      window.removeEventListener("resize", windowResizeHandler);
+    };
+  }, []);
   return (
     <>
       <Layout className="layout">
@@ -83,16 +98,16 @@ export default () => {
                   dataField={[
                     {
                       field: "title",
-                      weight: 1,
+                      weight: 5,
                     },
                     {
                       field: "title.search",
-                      weight: 2,
+                      weight: 1,
                     },
 
                     {
                       field: "NER.keyword",
-                      weight: 4,
+                      weight: 3,
                     },
                     {
                       field: "ingredients.keyword",
@@ -119,42 +134,70 @@ export default () => {
               </Col>
             </Row>
             <Row justify="center" gutter={(24, 24)} className="filter-row">
-              <Col xs={20} sm={20} md={24} lg={6} xl={6}>
+              <Col
+                xs={20}
+                sm={20}
+                md={24}
+                lg={6}
+                xl={6}
+                style={
+                  isMobileView &&
+                  showFilterOptions && {
+                    position: "fixed",
+                    zIndex: 2,
+                    background: "rgba(255 ,255, 255 , .9)",
+                    height: "100vh",
+                    top: 0,
+                    width: "100vw",
+                    maxWidth: "100%",
+                    paddingTop: "20px",
+                    overflowY: "scroll",
+                  }
+                }
+              >
+                {isMobileView && !showFilterOptions && (
+                  <Button
+                    onClick={() => setShowFilterOptions(!showFilterOptions)}
+                  >
+                    {showFilterOptions ? "Hide" : "Show"} Filters
+                  </Button>
+                )}
                 <SearchBox
                   clearFiltersOnQueryChange
                   customQuery={() => ({
                     timeout: "1s",
                   })}
+                  className={
+                    !showFilterOptions && isMobileView && "isIngredientHidden"
+                  }
                   autosuggest={false}
                   aggregationSize={20}
                   id="filter-search-component"
                   dataField={[
                     {
-                      field: "NER.search",
-                      weight: 4,
-                    },
-                    {
-                      field: "ingredients.search",
-                      weight: 4,
-                    },
-                    {
                       field: "NER.keyword",
                       weight: 4,
                     },
-                    {
-                      field: "ingredients.keyword",
-                      weight: 4,
-                    },
-                    {
-                      field: "NER.autosuggest",
-                      weight: 3,
-                    },
-                    {
-                      field: "ingredients.autosuggest",
-                      weight: 3,
-                    },
                   ]}
-                  title="Ingredient Filter"
+                  title={
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <span>Ingredient Filter</span>
+                      {window.innerWidth < 600 && (
+                        <Button
+                          onClick={() =>
+                            setShowFilterOptions(!showFilterOptions)
+                          }
+                        >
+                          {showFilterOptions ? "Hide" : "Show"} Filters
+                        </Button>
+                      )}
+                    </div>
+                  }
                   placeholder="Try searching : 'salt' or 'sugar'"
                   autosuggest={false}
                   debounce={100}
@@ -162,11 +205,11 @@ export default () => {
                   fuzziness="AUTO"
                   showClear
                   URLParams
-                  className="custom-class"
                   iconPosition="left"
                   style={{ paddingBottom: 10 }}
                   enablePredictiveSuggestions={true}
                 />
+
                 <SearchComponent
                   id="ingredient-filter"
                   type="term"
@@ -195,7 +238,13 @@ export default () => {
                     });
 
                     return (
-                      <div className="filter-container">
+                      <div
+                        className={
+                          !showFilterOptions && isMobileView
+                            ? " filter-container isIngredientHidden"
+                            : "filter-container"
+                        }
+                      >
                         {loading ? (
                           <Row
                             justify="center"
@@ -215,7 +264,9 @@ export default () => {
                                 0,
                                 Math.max(
                                   7,
-                                  showAllFilters ? sortedFilters.length : 7
+                                  showAllFilters || isMobileView
+                                    ? sortedFilters.length
+                                    : 7
                                 )
                               )
                               .map((item) => {
@@ -266,17 +317,19 @@ export default () => {
                                 );
                               })}
 
-                            <Col span={24}>
-                              <Button
-                                type="primary"
-                                onClick={() =>
-                                  setShowAllFilters(!showAllFilters)
-                                }
-                                style={{ fontWeight: "bold" }}
-                              >
-                                Show {showAllFilters ? "Less" : "More"}
-                              </Button>
-                            </Col>
+                            {!isMobileView && (
+                              <Col span={24}>
+                                <Button
+                                  type="primary"
+                                  onClick={() =>
+                                    setShowAllFilters(!showAllFilters)
+                                  }
+                                  style={{ fontWeight: "bold" }}
+                                >
+                                  Show {showAllFilters ? "Less" : "More"}
+                                </Button>
+                              </Col>
+                            )}
                           </>
                         )}
                       </div>
@@ -295,7 +348,7 @@ export default () => {
                   }}
                   dataField={["title"]}
                   aggregationField="title.keyword"
-                  size={10}
+                  size={0}
                   aggregationSize={10}
                   react={{
                     and: ["search-component", "ingredient-filter"],
@@ -346,7 +399,9 @@ export default () => {
                             {" "}
                             <p>
                               <strong style={{ color: "red" }}>
-                                {results.numberOfResults}
+                                {new Intl.NumberFormat("en-IN", {
+                                  maximumSignificantDigits: 3,
+                                }).format(results.numberOfResults)}
                               </strong>{" "}
                               results found in{" "}
                               <strong style={{ color: "red" }}>
@@ -378,13 +433,13 @@ export default () => {
                                 gutter={[16, 16]}
                                 justify="start"
                                 wrap
-                                justify="center"
+                                justify="flex-start"
                                 className="result-row"
                               >
                                 {aggregationData.data?.map((itemRaw) => {
                                   const item = itemRaw.hits.hits[0]._source;
                                   return (
-                                    <Col flex="0 0 auto" key={item.id}>
+                                    <Col flex="0 0 auto" key={item._key}>
                                       {" "}
                                       <Card
                                         style={{ width: 300, height: 250 }}
@@ -480,14 +535,20 @@ export default () => {
                                               >
                                                 {" "}
                                                 <span>
-                                                  <LinkOutlined />{" "}
+                                                  <img
+                                                    src={
+                                                      require("./assets/images/external-link.png")
+                                                        .default
+                                                    }
+                                                    height="25px"
+                                                  />
                                                   <a
                                                     href={
                                                       "https://" + item.link
                                                     }
                                                     target="_blank"
                                                   >
-                                                    {item?.link?.split(".")[1]}
+                                                    Recipe Origin
                                                   </a>
                                                 </span>
                                               </Col>

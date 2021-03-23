@@ -17,7 +17,7 @@ const InfiniteScrollContainer = ({ children, callNextPage, loading }) => {
   };
   useEffect(() => {
     var options = {
-      root: null,
+      root: document.getElementById("under-observation"),
       rootMargin: "0px",
       threshold: 1.0,
     };

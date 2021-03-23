@@ -1,7 +1,6 @@
 import Modal from "antd/lib/modal/Modal";
 import React, { useState, useEffect } from "react";
 import IngredientIcon from "./assets/images/ingredients.svg";
-import { LinkOutlined } from "@ant-design/icons";
 import CookingIcon from "./assets/images/cooking.svg";
 
 const RecipeFullView = ({
@@ -18,9 +17,12 @@ const RecipeFullView = ({
         onCancel={onClose}
         footer={
           <span>
-            <LinkOutlined />{" "}
+            <img
+              src={require("./assets/images/external-link.png").default}
+              height="35px"
+            />
             <a href={"https://" + recipeItem.link} target="_blank">
-              {recipeItem.link.split(".")[1]}
+              Recipe Origin
             </a>
           </span>
         }

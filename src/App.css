@@ -57,12 +57,18 @@
   padding-top: 70px;
 }
 
+.isIngredientHidden {
+  display: none !important;
+}
+
 @media screen and (max-width: 600px) {
   .layout {
     padding: 0;
+    height: 100vh;
+    overflow: hidden;
   }
   .filter-row {
-    padding-top: 35px;
+    padding-top: 17px;
   }
   .result-time-status {
     padding-top: 25px;
@@ -76,4 +82,8 @@
   .result-time-status {
     padding-top: 25px;
   }
+}
+
+.search-icon {
+  fill: black !important;
 }
