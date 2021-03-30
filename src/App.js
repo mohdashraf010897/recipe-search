@@ -6,7 +6,6 @@ import {
   Tag,
   Empty,
   Card,
-  Anchor,
   Divider,
   Tooltip,
   Button,
@@ -63,9 +62,9 @@ export default () => {
       <Layout className="layout">
         {" "}
         <SearchBase
-          index="recipes-demo"
-          credentials="a03a1cb71321:75b6603d-9456-4a5a-af6b-a487b309eb61"
-          url="https://appbase-demo-ansible-abxiydt-arc.searchbase.io"
+          index={process.env.REACT_APP_APPBASE_APP_NAME}
+          credentials={process.env.REACT_APP_APPBASE_APP_CREDENTIALS}
+          url={process.env.REACT_APP_APPBASE_URL}
           appbaseConfig={{
             recordAnalytics: true,
             enableQueryRules: true,
@@ -130,6 +129,7 @@ export default () => {
                   enableRecentSearches={false}
                   iconPosition="left"
                   style={{ paddingBottom: 10 }}
+                  queryFormat="and"
                 />
               </Col>
             </Row>
@@ -163,6 +163,7 @@ export default () => {
                   </Button>
                 )}
                 <SearchBox
+                  queryFormat="and"
                   clearFiltersOnQueryChange
                   customQuery={() => ({
                     timeout: "1s",
