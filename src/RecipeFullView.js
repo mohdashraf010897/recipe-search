@@ -12,7 +12,25 @@ const RecipeFullView = ({
     Object.keys(recipeItem).length > 0 && (
       <Modal
         style={{ top: 20, textAlign: "left" }}
-        title={recipeItem.title}
+        title={
+          <span
+            style={{
+              // color: `hsla(${
+              //   Math.random() * 360
+              // }, 100%, 50%, 1)`,
+              height: "auto",
+              whiteSpace: "pre-wrap",
+              marginBottom: "0px",
+              lineHeight: "22px",
+              fontSize: "14px",
+              // paddingTop: "14px",
+              color: "#ff7f7f",
+            }}
+            dangerouslySetInnerHTML={{
+              __html: recipeItem.title.trim().replace("/(*)/g", ""),
+            }}
+          ></span>
+        }
         visible={isModalVisible}
         onCancel={onClose}
         footer={

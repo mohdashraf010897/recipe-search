@@ -2,7 +2,12 @@ import { Spin } from "antd";
 import React, { useState, useEffect, useRef } from "react";
 
 let prevY = 0;
-const InfiniteScrollContainer = ({ children, callNextPage, loading }) => {
+const InfiniteScrollContainer = ({
+  children,
+  callNextPage,
+  loading,
+  scrollToTop,
+}) => {
   let loadingRef = useRef(null);
 
   let observer;
@@ -26,12 +31,9 @@ const InfiniteScrollContainer = ({ children, callNextPage, loading }) => {
     observer.observe(loadingRef);
   }, []);
 
-  // useEffect(() => {
-
-  //   if(resetScroll){// set scroll position in px
-  //   loadingRef.scrollLeft = 300;
-  //   loadingRef.scrollTop = 500;}
-  // }, [resetScroll])
+  useEffect(() => {
+    document.getElementById("under-observation").scrollTo(0, 0);
+  }, [scrollToTop]);
 
   const loadingCSS = {
     height: "100px",

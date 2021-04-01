@@ -26,6 +26,137 @@ import OvenGloveIcon from "./assets/images/oven-glove.svg";
 import RecipeFullView from "./RecipeFullView.js";
 import InfiniteScrollContainer from "./InfiniteScrollContainer";
 
+const CardItem = ({ item, setfullRecipe }) => (
+  <Col flex="0 0 auto" key={item._key}>
+    {" "}
+    <Card
+      style={{ width: 300, height: 250 }}
+      bodyStyle={{ padding: "10px 0" }}
+      title={
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            height: "40px",
+          }}
+        >
+          <h3
+            style={{
+              // color: `hsla(${
+              //   Math.random() * 360
+              // }, 100%, 50%, 1)`,
+              height: "auto",
+              whiteSpace: "pre-wrap",
+              marginBottom: "0px",
+              lineHeight: "22px",
+              fontSize: "14px",
+              // paddingTop: "14px",
+              color: "#ff7f7f",
+            }}
+            dangerouslySetInnerHTML={{
+              __html: item.title.trim().replace("/(*)/g", ""),
+            }}
+          ></h3>
+        </div>
+      }
+    >
+      <Meta
+        style={{
+          textAlign: "left",
+          height: 104,
+          overflow: "hidden",
+          display: "-webkit-box",
+          webkitLineClamp: 4,
+          webkitBoxOrient: "vertical",
+          padding: "5px 15px",
+        }}
+        description={
+          <span
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gridColumnGap: "14px",
+              flexWrap: "wrap",
+              gridRowGap: "4px",
+            }}
+          >
+            {item?.NER?.map((item, idx) => {
+              return (
+                <span
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gridGap: "4px",
+                  }}
+                  key={idx}
+                >
+                  <img src={IngredientIcon} height="15px" />
+                  {item[0].toUpperCase() + item.substring(1)}
+                </span>
+              );
+            })}
+          </span>
+        }
+      />
+      <Divider style={{ margin: "12px 0 10px" }} />
+      <Meta
+        style={{
+          textAlign: "left",
+          padding: "7px",
+        }}
+        description={
+          <Row justify="space-between">
+            <Col
+              span={12}
+              style={{
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              {" "}
+              <span>
+                <img
+                  src={require("./assets/images/external-link.png").default}
+                  height="25px"
+                />
+                <a href={"https://" + item.link} target="_blank">
+                  Recipe Origin
+                </a>
+              </span>
+            </Col>
+            <Col span={8} pull={4}>
+              <Tooltip title="See Full Recipe!">
+                <Button
+                  onClick={() =>
+                    setfullRecipe({
+                      isModalVisible: true,
+                      recipeItem: item,
+                    })
+                  }
+                  style={{
+                    paddingLeft: "10px",
+                  }}
+                  icon={
+                    <img
+                      src={OvenGloveIcon}
+                      height="20px"
+                      style={{
+                        marginRight: "7px",
+                      }}
+                    />
+                  }
+                >
+                  View Recipe
+                </Button>
+              </Tooltip>
+            </Col>
+          </Row>
+        }
+      />
+    </Card>
+  </Col>
+);
+
 const { CheckableTag } = Tag;
 let pageChange = false,
   currentPage = 0;
@@ -116,21 +247,20 @@ export default () => {
                   title="Search"
                   placeholder="Yummy Pasta..."
                   autosuggest={false}
+                  enablePopularSuggestions={false}
+                  enableRecentSearches={false}
                   size={10}
                   debounce={100}
-                  queryFormat="or"
                   fuzziness="AUTO"
                   showClear
                   showVoiceSearch
                   URLParams
                   className="result-search-box"
                   showDistinctSuggestions
-                  enablePopularSuggestions={false}
-                  enableRecentSearches={false}
                   iconPosition="left"
                   style={{ paddingBottom: 10 }}
                   queryFormat="and"
-                />
+                ></SearchBox>
               </Col>
             </Row>
             <Row justify="center" gutter={(24, 24)} className="filter-row">
@@ -202,7 +332,6 @@ export default () => {
                   placeholder="Try searching : 'salt' or 'sugar'"
                   autosuggest={false}
                   debounce={100}
-                  queryFormat="or"
                   fuzziness="AUTO"
                   showClear
                   URLParams
@@ -213,7 +342,11 @@ export default () => {
 
                 <SearchComponent
                   id="ingredient-filter"
+                  onValueChange={function (value) {
+                    console.log("value", value);
+                  }}
                   type="term"
+                  queryFormat="and"
                   highlight
                   aggregationSize={30}
                   dataField="NER.keyword"
@@ -222,19 +355,31 @@ export default () => {
                   react={{
                     and: ["search-component", "filter-search-component"],
                   }}
-                  // onValueChange={(next, prev) =>
-                  //   console.log("next ingredient", next)
-                  // }
-                  // To initialize with default value
                   value={[]}
-                  render={({ aggregationData, loading, value, setValue }) => {
+                  render={({
+                    aggregationData,
+                    loading,
+                    value,
+                    setValue,
+                    query,
+                  }) => {
                     // console.log("value", value, aggregationData);
-                    const responseValue = value || [];
-                    const sortedFilters = [...responseValue];
-
+                    const responseValue = value
+                      ? value.map((item) => item.toLowerCase())
+                      : [];
+                    // const sortedFilters = [...responseValue];
+                    // console.log("This is the query", aggregationData);
+                    // aggregationData?.data?.map((item) => {
+                    //   if (!responseValue.includes(item._key.toLowerCase())) {
+                    //     sortedFilters.push(item._key);
+                    //   }
+                    // });
+                    const sortedFilters = [];
                     aggregationData?.data?.map((item) => {
                       if (!responseValue.includes(item._key.toLowerCase())) {
-                        sortedFilters.push(item._key);
+                        sortedFilters.push(item);
+                      } else {
+                        sortedFilters.unshift(item);
                       }
                     });
 
@@ -272,7 +417,7 @@ export default () => {
                               )
                               .map((item) => {
                                 const isChecked = value
-                                  ? responseValue.includes(item)
+                                  ? responseValue.includes(item._key)
                                   : false;
                                 return (
                                   <div className="list-item" key={item}>
@@ -293,11 +438,12 @@ export default () => {
                                         if (!checked) {
                                           values = [
                                             ...values.filter(
-                                              (valueItem) => valueItem != item
+                                              (valueItem) =>
+                                                valueItem != item._key
                                             ),
                                           ];
                                         } else {
-                                          values.push(item);
+                                          values.push(item._key);
                                         }
                                         // Set filter value and trigger custom query
                                         setValue(values, {
@@ -312,7 +458,7 @@ export default () => {
                                       ) : (
                                         <PlusCircleTwoTone />
                                       )}{" "}
-                                      {item}
+                                      {`${item._key} ( ${item._doc_count} )`}
                                     </CheckableTag>
                                   </div>
                                 );
@@ -349,15 +495,12 @@ export default () => {
                   }}
                   dataField={["title"]}
                   aggregationField="title.keyword"
-                  size={0}
+                  size={10}
                   aggregationSize={10}
                   react={{
                     and: ["search-component", "ingredient-filter"],
                   }}
                   subscribeTo={["aggregationData", "requestStatus"]}
-                  onAggregationData={(next, prev) => {
-                    // console.log("next", next);
-                  }}
                   preserveResults={true}
                   onQueryChange={() => {
                     // console.log("QUERY GOT CHANGED");
@@ -371,7 +514,7 @@ export default () => {
                     setFrom,
                     aggregationData,
                   }) => {
-                    console.log("aggregationData", aggregationData);
+                    // console.log("aggregationData", aggregationData);
                     console.log("results", results);
                     // if (
                     //   (concatData.length == 0 || !!pageChange) &&
@@ -382,10 +525,23 @@ export default () => {
                     //   console.log("state changed");
                     //   pageChange = false;
                     // }
+                    const sourceChoices = [results, aggregationData];
+
+                    // use
+                    // choiceIndex = 0 --------> Results
+                    // choiceIndex = 1 --------> Aggregations
+                    const choiceIndex = 0;
+                    let scrollToTop =
+                      sourceChoices[choiceIndex].data.length <= 10;
+                    console.log(
+                      "scrollToTop",
+                      scrollToTop,
+                      sourceChoices[choiceIndex].data.length
+                    );
                     return (
                       <>
                         {" "}
-                        {!aggregationData.data.length ? (
+                        {!sourceChoices[choiceIndex].data.length ? (
                           <Empty
                             description={
                               <span>
@@ -400,7 +556,7 @@ export default () => {
                             {" "}
                             <p>
                               <strong style={{ color: "red" }}>
-                                {new Intl.NumberFormat("en-IN", {
+                                {new Intl.NumberFormat("en-US", {
                                   maximumSignificantDigits: 3,
                                 }).format(results.numberOfResults)}
                               </strong>{" "}
@@ -424,11 +580,9 @@ export default () => {
                             }
                           }}
                           loading={loading}
+                          scrollToTop={scrollToTop}
                         >
                           <div className="result-list-container">
-                            {/* {loading ? (
-                      <div>Loading Results ...</div>
-                    ) : ( */}
                             <Spin spinning={loading}>
                               <Row
                                 gutter={[16, 16]}
@@ -437,155 +591,21 @@ export default () => {
                                 justify="flex-start"
                                 className="result-row"
                               >
-                                {aggregationData.data?.map((itemRaw) => {
-                                  const item = itemRaw.hits.hits[0]._source;
-                                  return (
-                                    <Col flex="0 0 auto" key={item._key}>
-                                      {" "}
-                                      <Card
-                                        style={{ width: 300, height: 250 }}
-                                        bodyStyle={{ padding: "10px 0" }}
-                                        title={
-                                          <div
-                                            style={{
-                                              display: "flex",
-                                              alignItems: "center",
-                                              height: "40px",
-                                            }}
-                                          >
-                                            <h3
-                                              style={{
-                                                // color: `hsla(${
-                                                //   Math.random() * 360
-                                                // }, 100%, 50%, 1)`,
-                                                height: "auto",
-                                                whiteSpace: "pre-wrap",
-                                                marginBottom: "0px",
-                                                lineHeight: "22px",
-                                                fontSize: "14px",
-                                                // paddingTop: "14px",
-                                                color: "#ff7f7f",
-                                              }}
-                                              dangerouslySetInnerHTML={{
-                                                __html: item.title
-                                                  .trim()
-                                                  .replace("/(*)/g", ""),
-                                              }}
-                                            ></h3>
-                                          </div>
-                                        }
-                                      >
-                                        <Meta
-                                          style={{
-                                            textAlign: "left",
-                                            height: 104,
-                                            overflow: "hidden",
-                                            display: "-webkit-box",
-                                            webkitLineClamp: 4,
-                                            webkitBoxOrient: "vertical",
-                                            padding: "5px 15px",
-                                          }}
-                                          description={
-                                            <span
-                                              style={{
-                                                display: "flex",
-                                                alignItems: "center",
-                                                gridColumnGap: "14px",
-                                                flexWrap: "wrap",
-                                                gridRowGap: "4px",
-                                              }}
-                                            >
-                                              {item?.NER?.map((item, idx) => {
-                                                return (
-                                                  <span
-                                                    style={{
-                                                      display: "flex",
-                                                      alignItems: "center",
-                                                      gridGap: "4px",
-                                                    }}
-                                                    key={idx}
-                                                  >
-                                                    <img
-                                                      src={IngredientIcon}
-                                                      height="15px"
-                                                    />
-                                                    {item[0].toUpperCase() +
-                                                      item.substring(1)}
-                                                  </span>
-                                                );
-                                              })}
-                                            </span>
-                                          }
-                                        />
-                                        <Divider
-                                          style={{ margin: "12px 0 10px" }}
-                                        />
-                                        <Meta
-                                          style={{
-                                            textAlign: "left",
-                                            padding: "7px",
-                                          }}
-                                          description={
-                                            <Row justify="space-between">
-                                              <Col
-                                                span={12}
-                                                style={{
-                                                  display: "flex",
-                                                  alignItems: "center",
-                                                }}
-                                              >
-                                                {" "}
-                                                <span>
-                                                  <img
-                                                    src={
-                                                      require("./assets/images/external-link.png")
-                                                        .default
-                                                    }
-                                                    height="25px"
-                                                  />
-                                                  <a
-                                                    href={
-                                                      "https://" + item.link
-                                                    }
-                                                    target="_blank"
-                                                  >
-                                                    Recipe Origin
-                                                  </a>
-                                                </span>
-                                              </Col>
-                                              <Col span={8} pull={4}>
-                                                <Tooltip title="See Full Recipe!">
-                                                  <Button
-                                                    onClick={() =>
-                                                      setfullRecipe({
-                                                        isModalVisible: true,
-                                                        recipeItem: item,
-                                                      })
-                                                    }
-                                                    style={{
-                                                      paddingLeft: "10px",
-                                                    }}
-                                                    icon={
-                                                      <img
-                                                        src={OvenGloveIcon}
-                                                        height="20px"
-                                                        style={{
-                                                          marginRight: "7px",
-                                                        }}
-                                                      />
-                                                    }
-                                                  >
-                                                    View Recipe
-                                                  </Button>
-                                                </Tooltip>
-                                              </Col>
-                                            </Row>
-                                          }
-                                        />
-                                      </Card>
-                                    </Col>
-                                  );
-                                })}
+                                {sourceChoices[choiceIndex].data?.map(
+                                  (itemRaw) => {
+                                    const item =
+                                      choiceIndex == 1
+                                        ? itemRaw.hits.hits[0]._source
+                                        : itemRaw;
+
+                                    return (
+                                      <CardItem
+                                        item={item}
+                                        setfullRecipe={setfullRecipe}
+                                      />
+                                    );
+                                  }
+                                )}
                               </Row>
                             </Spin>{" "}
                           </div>
