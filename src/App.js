@@ -458,7 +458,9 @@ export default () => {
                                       ) : (
                                         <PlusCircleTwoTone />
                                       )}{" "}
-                                      {`${item._key} ( ${item._doc_count} )`}
+                                      {`${item._key} ( ${{new Intl.NumberFormat("en-US", {
+                                  maximumSignificantDigits: 3,
+                                }).format(item._doc_count)}} )`}
                                     </CheckableTag>
                                   </div>
                                 );
