@@ -25,6 +25,7 @@ import IngredientIcon from "./assets/images/ingredients.svg";
 import OvenGloveIcon from "./assets/images/oven-glove.svg";
 import RecipeFullView from "./RecipeFullView.js";
 import InfiniteScrollContainer from "./InfiniteScrollContainer";
+import QuerySuggestions from "./QuerySuggestions";
 
 const CardItem = ({ item, setfullRecipe }) => (
   <Col flex="0 0 auto" key={item._key}>
@@ -158,8 +159,7 @@ const CardItem = ({ item, setfullRecipe }) => (
 );
 
 const { CheckableTag } = Tag;
-let pageChange = false,
-  currentPage = 0;
+let currentPage = 0;
 export default () => {
   const [isMobileView, setIsMobileView] = useState(false);
   const [fullRecipe, setfullRecipe] = useState({
@@ -261,6 +261,7 @@ export default () => {
                   style={{ paddingBottom: 10 }}
                   queryFormat="and"
                 ></SearchBox>
+                <QuerySuggestions />{" "}
               </Col>
             </Row>
             <Row justify="center" gutter={(24, 24)} className="filter-row">
@@ -299,7 +300,9 @@ export default () => {
                     timeout: "1s",
                   })}
                   className={
-                    !showFilterOptions && isMobileView && "isIngredientHidden"
+                    !showFilterOptions && isMobileView
+                      ? "isIngredientHidden"
+                      : ""
                   }
                   autosuggest={false}
                   aggregationSize={20}
@@ -429,8 +432,9 @@ export default () => {
                                         gridGap: "6px",
                                         textTransform: "capitalize",
                                         fontSize: "13px",
+                                        borderColor: "#1b90ff",
                                         ...(!isChecked && {
-                                          backgroundColor: "rgb(204, 204, 204)",
+                                          backgroundColor: "rgb(256,256,256)",
                                         }),
                                       }}
                                       onChange={(checked) => {
@@ -507,8 +511,8 @@ export default () => {
                   }}
                   subscribeTo={["aggregationData", "requestStatus"]}
                   preserveResults={true}
-                  onQueryChange={() => {
-                    // console.log("QUERY GOT CHANGED");
+                  onQueryChange={(next, prev) => {
+                    console.log("prev-next", prev, next);
                   }}
                 >
                   {({
@@ -520,16 +524,8 @@ export default () => {
                     aggregationData,
                   }) => {
                     // console.log("aggregationData", aggregationData);
-                    console.log("results", results);
-                    // if (
-                    //   (concatData.length == 0 || !!pageChange) &&
-                    //   results.data.length > 0
-                    // ) {
-                    //   console.log("PREV", concatData, results.data);
-                    //   setConcatData([...concatData, ...results.data]);
-                    //   console.log("state changed");
-                    //   pageChange = false;
-                    // }
+                    // console.log("results", results);
+
                     const sourceChoices = [results, aggregationData];
 
                     // use
@@ -538,11 +534,11 @@ export default () => {
                     const choiceIndex = 0;
                     let scrollToTop =
                       sourceChoices[choiceIndex].data.length <= 10;
-                    console.log(
-                      "scrollToTop",
-                      scrollToTop,
-                      sourceChoices[choiceIndex].data.length
-                    );
+                    // console.log(
+                    //   "scrollToTop",
+                    //   scrollToTop,
+                    //   sourceChoices[choiceIndex].data.length
+                    // );
                     return (
                       <>
                         {" "}
@@ -580,7 +576,6 @@ export default () => {
                               currentPage
                             ) {
                               currentPage++;
-                              pageChange = true;
                               setFrom((currentPage + 1) * size);
                             }
                           }}
