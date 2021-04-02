@@ -14,7 +14,9 @@ class InfiniteScrollContainer extends React.Component {
     const y = entities[0].boundingClientRect.y;
 
     if (prevY > y) {
-      this.props.callNextPage();
+      this.props.callNextPage(
+        this.context._components["result-component"].setAfter
+      );
     }
     prevY = y;
   };
@@ -25,8 +27,8 @@ class InfiniteScrollContainer extends React.Component {
       threshold: 1.0,
     };
 
-    observer = new IntersectionObserver(this.handleObserver, options);
-    observer.observe(this.loadingRef.current);
+    this.observer = new IntersectionObserver(this.handleObserver, options);
+    this.observer.observe(this.loadingRef.current);
   }
 
   componentDidUpdate(prevProps, prevState) {

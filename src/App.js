@@ -53,7 +53,7 @@ const CardItem = ({ item, setfullRecipe }) => (
               color: "#ff7f7f",
             }}
             dangerouslySetInnerHTML={{
-              __html: item.title.trim().replace("/(*)/g", ""),
+              __html: item.title.trim().replace(/[()]/g, ""),
             }}
           ></h3>
         </div>
@@ -62,7 +62,7 @@ const CardItem = ({ item, setfullRecipe }) => (
       <Meta
         style={{
           textAlign: "left",
-          height: 104,
+          height: 110,
           overflow: "hidden",
           display: "-webkit-box",
           webkitLineClamp: 4,
@@ -74,12 +74,15 @@ const CardItem = ({ item, setfullRecipe }) => (
             style={{
               display: "flex",
               alignItems: "center",
-              gridColumnGap: "14px",
+              gridColumnGap: "5px",
               flexWrap: "wrap",
               gridRowGap: "4px",
+              fontSize: ".75rem",
             }}
           >
-            {item?.NER?.map((item, idx) => {
+            {item?.NER?.filter(
+              (item) => item.replace(/[^A-Za-z']/g, "").length > 0
+            ).map((item, idx, NER) => {
               return (
                 <span
                   style={{
@@ -89,8 +92,9 @@ const CardItem = ({ item, setfullRecipe }) => (
                   }}
                   key={idx * Math.random() * 100}
                 >
-                  <img src={IngredientIcon} height="15px" />
+                  {/* <img src={IngredientIcon} height="15px" /> */}
                   {item[0].toUpperCase() + item.substring(1)}
+                  {idx !== NER.length - 1 ? "," : ""}
                 </span>
               );
             })}
@@ -237,10 +241,6 @@ export default () => {
                       field: "NER.keyword",
                       weight: 3,
                     },
-                    {
-                      field: "ingredients.keyword",
-                      weight: 2,
-                    },
                   ]}
                   title="Search"
                   placeholder="Yummy Pasta..."
@@ -359,7 +359,6 @@ export default () => {
                     setValue,
                     query,
                   }) => {
-                    console.log(value);
                     const responseValue = value
                       ? value.map((item) => item.toLowerCase())
                       : [];
@@ -405,7 +404,6 @@ export default () => {
                                 )
                               )
                               .map((item) => {
-                                console.log(item._key, responseValue);
                                 const isChecked = value
                                   ? responseValue.includes(
                                       item._key.toLowerCase()
@@ -509,7 +507,7 @@ export default () => {
                     setFrom,
                     aggregationData,
                   }) => {
-                    // console.log("aggregationData", aggregationData);
+                    console.log("aggregationData", aggregationData);
                     // console.log("results", results);
 
                     const sourceChoices = [results, aggregationData];
@@ -517,7 +515,7 @@ export default () => {
                     // use
                     // choiceIndex = 0 --------> Results
                     // choiceIndex = 1 --------> Aggregations
-                    const choiceIndex = 0;
+                    const choiceIndex = 1;
 
                     return (
                       <>
@@ -550,13 +548,15 @@ export default () => {
                           </Col>
                         )}
                         <InfiniteScrollContainer
-                          callNextPage={() => {
+                          callNextPage={(setAfter) => {
                             if (
                               Math.floor(results.numberOfResults / size) >=
                               currentPage
                             ) {
                               currentPage++;
-                              setFrom((currentPage + 1) * size);
+                              choiceIndex == 0
+                                ? setFrom(currentPage * size)
+                                : setAfter(aggregationData.afterKey);
                             }
                           }}
                           loading={loading}
