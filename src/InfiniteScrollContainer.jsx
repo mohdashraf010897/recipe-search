@@ -1,63 +1,64 @@
 import { Spin } from "antd";
-import React, { useState, useEffect, useRef } from "react";
+import React from "react";
+import { SearchContext } from "@appbaseio/react-searchbox";
 
+let observer;
 let prevY = 0;
-const InfiniteScrollContainer = ({
-  children,
-  callNextPage,
-  loading,
-  scrollToTop,
-}) => {
-  let loadingRef = useRef(null);
-
-  let observer;
-
-  const handleObserver = (entities, observer) => {
+class InfiniteScrollContainer extends React.Component {
+  static contextType = SearchContext;
+  constructor(props) {
+    super(props);
+    this.loadingRef = React.createRef();
+  }
+  handleObserver = (entities, observer) => {
     const y = entities[0].boundingClientRect.y;
 
     if (prevY > y) {
-      callNextPage();
+      this.props.callNextPage();
     }
     prevY = y;
   };
-  useEffect(() => {
+  componentDidMount() {
     var options = {
       root: document.getElementById("under-observation"),
       rootMargin: "0px",
       threshold: 1.0,
     };
 
-    observer = new IntersectionObserver(handleObserver, options);
-    observer.observe(loadingRef);
-  }, []);
+    observer = new IntersectionObserver(this.handleObserver, options);
+    observer.observe(this.loadingRef.current);
+  }
 
-  useEffect(() => {
-    document.getElementById("under-observation").scrollTo(0, 0);
-  }, [scrollToTop]);
+  componentDidUpdate(prevProps, prevState) {
+    if (this.context._components["result-component"].from == 0) {
+      document.getElementById("under-observation").scrollTo(0, 0);
+    }
+  }
 
-  const loadingCSS = {
-    height: "100px",
-    margin: "30px",
-    padding: 50,
-  };
-  const loadingTextCSS = { display: loading ? "block" : "none" };
-
-  return (
-    <div
-      id="under-observation"
-      style={{ maxHeight: "70vh", overflowY: "scroll", overflowX: "hidden" }}
-    >
-      <>{children}</>
-      <div ref={(ref) => (loadingRef = ref)} style={loadingCSS}>
-        <Spin
-          delay={500}
-          spinning={loading}
-          size="large"
-          tip="Fetching Results"
-        ></Spin>
+  render() {
+    const loadingCSS = {
+      height: "100px",
+      margin: "30px",
+      padding: 50,
+    };
+    const { children, callNextPage, loading } = this.props;
+    return (
+      <div
+        id="under-observation"
+        style={{ maxHeight: "70vh", overflowY: "scroll", overflowX: "hidden" }}
+      >
+        <>{children}</>
+        <div ref={this.loadingRef} style={loadingCSS}>
+          <Spin
+            delay={500}
+            spinning={loading}
+            size="large"
+            tip="Fetching Results"
+          ></Spin>
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  }
+}
 
 export default InfiniteScrollContainer;

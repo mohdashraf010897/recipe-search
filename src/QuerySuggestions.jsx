@@ -26,7 +26,6 @@ class QuerySuggestions extends Component {
     ));
   };
   render() {
-    console.log(this.context._components["search-component"]);
     const STATIC_RECIPE_SUGGESTIONS = [
       { value: "Pizza", tagColor: "magenta" },
       { value: "Curry", tagColor: "red" },

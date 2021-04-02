@@ -305,7 +305,6 @@ export default () => {
                       : ""
                   }
                   autosuggest={false}
-                  aggregationSize={20}
                   id="filter-search-component"
                   dataField={[
                     {
@@ -345,16 +344,12 @@ export default () => {
 
                 <SearchComponent
                   id="ingredient-filter"
-                  onValueChange={function (value) {
-                    console.log("value", value);
-                  }}
                   type="term"
                   queryFormat="and"
                   highlight
                   aggregationSize={30}
                   dataField="NER.keyword"
                   subscribeTo={["aggregationData", "requestStatus", "value"]}
-                  // URLParams
                   react={{
                     and: ["search-component", "filter-search-component"],
                   }}
@@ -366,17 +361,9 @@ export default () => {
                     setValue,
                     query,
                   }) => {
-                    // console.log("value", value, aggregationData);
                     const responseValue = value
                       ? value.map((item) => item.toLowerCase())
                       : [];
-                    // const sortedFilters = [...responseValue];
-                    // console.log("This is the query", aggregationData);
-                    // aggregationData?.data?.map((item) => {
-                    //   if (!responseValue.includes(item._key.toLowerCase())) {
-                    //     sortedFilters.push(item._key);
-                    //   }
-                    // });
                     const sortedFilters = [];
                     aggregationData?.data?.map((item) => {
                       if (!responseValue.includes(item._key.toLowerCase())) {
@@ -511,9 +498,6 @@ export default () => {
                   }}
                   subscribeTo={["aggregationData", "requestStatus"]}
                   preserveResults={true}
-                  onQueryChange={(next, prev) => {
-                    console.log("prev-next", prev, next);
-                  }}
                 >
                   {({
                     results,
@@ -532,13 +516,7 @@ export default () => {
                     // choiceIndex = 0 --------> Results
                     // choiceIndex = 1 --------> Aggregations
                     const choiceIndex = 0;
-                    let scrollToTop =
-                      sourceChoices[choiceIndex].data.length <= 10;
-                    // console.log(
-                    //   "scrollToTop",
-                    //   scrollToTop,
-                    //   sourceChoices[choiceIndex].data.length
-                    // );
+
                     return (
                       <>
                         {" "}
@@ -580,7 +558,6 @@ export default () => {
                             }
                           }}
                           loading={loading}
-                          scrollToTop={scrollToTop}
                         >
                           <div className="result-list-container">
                             <Spin spinning={loading}>
