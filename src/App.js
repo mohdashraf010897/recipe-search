@@ -87,7 +87,7 @@ const CardItem = ({ item, setfullRecipe }) => (
                     alignItems: "center",
                     gridGap: "4px",
                   }}
-                  key={idx}
+                  key={idx * Math.random() * 100}
                 >
                   <img src={IngredientIcon} height="15px" />
                   {item[0].toUpperCase() + item.substring(1)}
@@ -359,6 +359,7 @@ export default () => {
                     setValue,
                     query,
                   }) => {
+                    console.log(value);
                     const responseValue = value
                       ? value.map((item) => item.toLowerCase())
                       : [];
@@ -404,11 +405,14 @@ export default () => {
                                 )
                               )
                               .map((item) => {
+                                console.log(item._key, responseValue);
                                 const isChecked = value
-                                  ? responseValue.includes(item._key)
+                                  ? responseValue.includes(
+                                      item._key.toLowerCase()
+                                    )
                                   : false;
                                 return (
-                                  <div className="list-item" key={item}>
+                                  <div className="list-item" key={item._key}>
                                     <CheckableTag
                                       checked={isChecked}
                                       style={{
