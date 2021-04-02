@@ -1,3 +1,11 @@
+body {
+  font-family: "Avenir", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+  margin: 0 auto;
+}
 .App {
   text-align: center;
 }
@@ -86,4 +94,10 @@
 
 .search-icon {
   fill: black !important;
+}
+
+.filter-container {
+  display: flex;
+  flex-wrap: wrap;
+  grid-gap: 10px;
 }

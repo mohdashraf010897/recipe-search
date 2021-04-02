@@ -16,16 +16,14 @@ import {
   SearchComponent,
 } from "@appbaseio/react-searchbox";
 import "./App.css";
-
-import "./styles.css";
 import Layout from "antd/lib/layout/layout";
 import Meta from "antd/lib/card/Meta";
 import { PlusCircleTwoTone, MinusCircleTwoTone } from "@ant-design/icons";
 import IngredientIcon from "./assets/images/ingredients.svg";
 import OvenGloveIcon from "./assets/images/oven-glove.svg";
-import RecipeFullView from "./RecipeFullView.js";
-import InfiniteScrollContainer from "./InfiniteScrollContainer";
-import QuerySuggestions from "./QuerySuggestions";
+import RecipeFullView from "./components/RecipeFullView";
+import InfiniteScrollContainer from "./components/InfiniteScrollContainer";
+import QuerySuggestions from "./components/QuerySuggestions";
 
 const CardItem = ({ item, setfullRecipe }) => (
   <Col flex="0 0 auto" key={item._key}>
