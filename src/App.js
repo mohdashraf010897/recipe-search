@@ -507,7 +507,7 @@ export default () => {
                     setFrom,
                     aggregationData,
                   }) => {
-                    console.log("aggregationData", aggregationData);
+                    // console.log("aggregationData", aggregationData);
                     // console.log("results", results);
 
                     const sourceChoices = [results, aggregationData];
@@ -541,7 +541,9 @@ export default () => {
                               </strong>{" "}
                               results found in{" "}
                               <strong style={{ color: "red" }}>
-                                {results.time}
+                                {typeof results.time == "object"
+                                  ? results.time.took
+                                  : results.time}
                               </strong>{" "}
                               ms
                             </p>
@@ -556,10 +558,11 @@ export default () => {
                               currentPage++;
                               choiceIndex == 0
                                 ? setFrom(currentPage * size)
-                                : setAfter(aggregationData.afterKey);
+                                : setAfter?.(aggregationData.afterKey);
                             }
                           }}
                           loading={loading}
+                          choiceIndex={choiceIndex}
                         >
                           <div className="result-list-container">
                             <Spin spinning={loading}>
@@ -576,9 +579,9 @@ export default () => {
                                       choiceIndex == 1
                                         ? itemRaw.hits.hits[0]._source
                                         : itemRaw;
-
                                     return (
                                       <CardItem
+                                        key={item.id * Math.random()}
                                         item={item}
                                         setfullRecipe={setfullRecipe}
                                       />

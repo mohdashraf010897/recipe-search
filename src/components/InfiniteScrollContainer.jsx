@@ -15,7 +15,7 @@ class InfiniteScrollContainer extends React.Component {
 
     if (prevY > y) {
       this.props.callNextPage(
-        this.context._components["result-component"].setAfter
+        this.context._components["result-component"]?.setAfter
       );
     }
     prevY = y;
@@ -32,8 +32,18 @@ class InfiniteScrollContainer extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.context._components["result-component"].from == 0) {
-      document.getElementById("under-observation").scrollTo(0, 0);
+    //aggregations
+
+    if (this.props.choiceIndex == 1) {
+      if (
+        !this.context._components["result-component"].after?.["title.keyword"]
+      ) {
+        document.getElementById("under-observation").scrollTo(0, 0);
+      }
+    } else {
+      if (this.context._components["result-component"].from == 0) {
+        document.getElementById("under-observation").scrollTo(0, 0);
+      }
     }
   }
 
