@@ -14,9 +14,7 @@ class InfiniteScrollContainer extends React.Component {
     const y = entities[0].boundingClientRect.y;
 
     if (prevY > y) {
-      this.props.callNextPage(
-        this.context._components["result-component"]?.setAfter
-      );
+      this.props.callNextPage();
     }
     prevY = y;
   };

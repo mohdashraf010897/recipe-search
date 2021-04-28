@@ -25,6 +25,101 @@ import RecipeFullView from "./components/RecipeFullView";
 import InfiniteScrollContainer from "./components/InfiniteScrollContainer";
 import QuerySuggestions from "./components/QuerySuggestions";
 
+const getHostname = (url) => {
+  let urlLocal = url,
+    tempProtocol = "";
+  // use URL constructor and return hostname
+  if (urlLocal.indexOf("://") == -1) {
+    tempProtocol = "https://";
+    urlLocal = tempProtocol + urlLocal;
+  }
+  console.log("url", url);
+  return new URL(urlLocal).hostname.split(".")[1];
+};
+
+const PromotedCardItem = ({ item }) => {
+  return (
+    <Col span={24}>
+      {" "}
+      <Card
+        style={{
+          width: "100%",
+          border: " 1px solid #cf1421",
+          borderRadius: "5px",
+        }}
+        bodyStyle={{ padding: "10px 10px 0" }}
+        title={null}
+      >
+        {" "}
+        <Row
+          justify="space-between"
+          align="middle"
+          style={{ height: "40px" }}
+          wrap={false}
+        >
+          <h3
+            style={{
+              height: "auto",
+              whiteSpace: "pre-wrap",
+              marginBottom: "0px",
+              lineHeight: "15px",
+              fontSize: "14px",
+              color: "#ff7f7f",
+              display: "flex",
+              alignItems: "center",
+              gridGap: "7px",
+              textAlign: "left",
+            }}
+          >
+            <img
+              style={{
+                transform: "rotate(-25deg)",
+                height: "30px",
+                position: "relative",
+                top: "1px",
+              }}
+              src="https://img.icons8.com/emoji/48/000000/speaker-medium-volume.png"
+            />
+            <span>{item.title.trim().replace(/[()]/g, "")}</span>
+          </h3>
+          <Tag
+            color="red"
+            style={{
+              fontSize: "14px",
+              textTransform: "uppercase",
+              fontWeight: "600",
+              borderRadius: "40px",
+
+              padding: "2px 8px",
+              lineHeight: "unset",
+            }}
+          >
+            Promoted
+          </Tag>
+        </Row>
+        <Row
+          justify="space-between"
+          align="bottom"
+          style={{ padding: "10px 0", textAlign: "left", lineHeight: "15px" }}
+          wrap={false}
+        >
+          {" "}
+          <span>
+            Sponsored by :{" "}
+            <Tooltip title="See Full Recipe!">
+              {" "}
+              <a href={item.link} target="_blank">
+                {getHostname(item.link)}
+              </a>{" "}
+            </Tooltip>
+          </span>
+          <i> Powered by Query Rules</i>
+        </Row>
+      </Card>
+    </Col>
+  );
+};
+
 const CardItem = ({ item, setfullRecipe }) => (
   <Col flex="0 0 auto" key={item._key}>
     {" "}
@@ -244,9 +339,9 @@ export default () => {
                   ]}
                   title="Search"
                   placeholder="Yummy Pasta..."
-                  autosuggest={false}
-                  enablePopularSuggestions={false}
-                  enableRecentSearches={false}
+                  autosuggest={true}
+                  enablePopularSuggestions={true}
+                  enableRecentSearches={true}
                   size={10}
                   debounce={100}
                   fuzziness="AUTO"
@@ -499,17 +594,29 @@ export default () => {
                   subscribeTo={["aggregationData", "requestStatus"]}
                   preserveResults={true}
                 >
-                  {({
-                    results,
-                    loading,
-                    size,
-                    setValue,
-                    setFrom,
-                    aggregationData,
-                  }) => {
+                  {(props) => {
+                    const {
+                      results,
+                      loading,
+                      size,
+                      setValue,
+                      setFrom,
+                      aggregationData,
+                      setAfter,
+                      from,
+                      after,
+                    } = props;
+                    console.log("props", results);
                     // console.log("aggregationData", aggregationData);
-                    // console.log("results", results);
+                    console.log("results", results);
 
+                    const promotedData = !!results.promoted
+                      ? [
+                          ...results.promotedData.map((element) => {
+                            return element.doc;
+                          }),
+                        ]
+                      : [];
                     const sourceChoices = [results, aggregationData];
 
                     // use
@@ -550,7 +657,7 @@ export default () => {
                           </Col>
                         )}
                         <InfiniteScrollContainer
-                          callNextPage={(setAfter) => {
+                          callNextPage={() => {
                             if (
                               Math.floor(results.numberOfResults / size) >=
                               currentPage
@@ -573,6 +680,12 @@ export default () => {
                                 justify="flex-start"
                                 className="result-row"
                               >
+                                {promotedData?.map((promotedItem) => (
+                                  <PromotedCardItem
+                                    key={promotedItem.id}
+                                    item={promotedItem}
+                                  />
+                                ))}
                                 {sourceChoices[choiceIndex].data?.map(
                                   (itemRaw) => {
                                     const item =
