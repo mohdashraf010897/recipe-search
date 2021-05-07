@@ -1,273 +1,28 @@
 import React, { useState, useEffect } from "react";
 import {
-  Row,
-  Col,
-  Spin,
-  Tag,
-  Empty,
-  Card,
-  Divider,
-  Tooltip,
-  Button,
-} from "antd";
-import {
   SearchBox,
   SearchBase,
   SearchComponent,
 } from "@appbaseio/react-searchbox";
-import "./App.css";
+import { Row, Col, Button } from "antd";
 import Layout from "antd/lib/layout/layout";
-import Meta from "antd/lib/card/Meta";
-import { PlusCircleTwoTone, MinusCircleTwoTone } from "@ant-design/icons";
-import IngredientIcon from "./assets/images/ingredients.svg";
-import OvenGloveIcon from "./assets/images/oven-glove.svg";
-import RecipeFullView from "./components/RecipeFullView";
-import InfiniteScrollContainer from "./components/InfiniteScrollContainer";
 import QuerySuggestions from "./components/QuerySuggestions";
+import FiltersRenderer from "./components/FiltersRenderer";
+import ResultsRenderer from "./components/ResultsRenderer";
+import RecipeFullView from "./components/RecipeFullView";
+import "./App.css";
 
-const getHostname = (url) => {
-  let urlLocal = url,
-    tempProtocol = "";
-  // use URL constructor and return hostname
-  if (urlLocal.indexOf("://") == -1) {
-    tempProtocol = "https://";
-    urlLocal = tempProtocol + urlLocal;
-  }
-  console.log("url", url);
-  return new URL(urlLocal).hostname.split(".")[1];
-};
-
-const PromotedCardItem = ({ item }) => {
-  return (
-    <Col span={24}>
-      {" "}
-      <Card
-        style={{
-          width: "100%",
-          border: " 1px solid #cf1421",
-          borderRadius: "5px",
-        }}
-        bodyStyle={{ padding: "10px 10px 0" }}
-        title={null}
-      >
-        {" "}
-        <Row
-          justify="space-between"
-          align="middle"
-          style={{ height: "40px" }}
-          wrap={false}
-        >
-          <h3
-            style={{
-              height: "auto",
-              whiteSpace: "pre-wrap",
-              marginBottom: "0px",
-              lineHeight: "15px",
-              fontSize: "14px",
-              color: "#ff7f7f",
-              display: "flex",
-              alignItems: "center",
-              gridGap: "7px",
-              textAlign: "left",
-            }}
-          >
-            <img
-              style={{
-                transform: "rotate(-25deg)",
-                height: "30px",
-                position: "relative",
-                top: "1px",
-              }}
-              src="https://img.icons8.com/emoji/48/000000/speaker-medium-volume.png"
-            />
-            <span>{item.title.trim().replace(/[()]/g, "")}</span>
-          </h3>
-          <Tag
-            color="red"
-            style={{
-              fontSize: "14px",
-              textTransform: "uppercase",
-              fontWeight: "600",
-              borderRadius: "40px",
-
-              padding: "2px 8px",
-              lineHeight: "unset",
-            }}
-          >
-            Promoted
-          </Tag>
-        </Row>
-        <Row
-          justify="space-between"
-          align="bottom"
-          style={{ padding: "10px 0", textAlign: "left", lineHeight: "15px" }}
-          wrap={false}
-        >
-          {" "}
-          <span>
-            Sponsored by :{" "}
-            <Tooltip title="See Full Recipe!">
-              {" "}
-              <a href={item.link} target="_blank">
-                {getHostname(item.link)}
-              </a>{" "}
-            </Tooltip>
-          </span>
-          <i> Powered by Query Rules</i>
-        </Row>
-      </Card>
-    </Col>
-  );
-};
-
-const CardItem = ({ item, setfullRecipe }) => (
-  <Col flex="0 0 auto" key={item._key}>
-    {" "}
-    <Card
-      style={{ width: 300, height: 250 }}
-      bodyStyle={{ padding: "10px 0" }}
-      title={
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            height: "40px",
-          }}
-        >
-          <h3
-            style={{
-              // color: `hsla(${
-              //   Math.random() * 360
-              // }, 100%, 50%, 1)`,
-              height: "auto",
-              whiteSpace: "pre-wrap",
-              marginBottom: "0px",
-              lineHeight: "22px",
-              fontSize: "14px",
-              // paddingTop: "14px",
-              color: "#ff7f7f",
-            }}
-            dangerouslySetInnerHTML={{
-              __html: item.title.trim().replace(/[()]/g, ""),
-            }}
-          ></h3>
-        </div>
-      }
-    >
-      <Meta
-        style={{
-          textAlign: "left",
-          height: 110,
-          overflow: "hidden",
-          display: "-webkit-box",
-          webkitLineClamp: 4,
-          webkitBoxOrient: "vertical",
-          padding: "5px 15px",
-        }}
-        description={
-          <span
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gridColumnGap: "5px",
-              flexWrap: "wrap",
-              gridRowGap: "4px",
-              fontSize: ".75rem",
-            }}
-          >
-            {item?.NER?.filter(
-              (item) => item.replace(/[^A-Za-z']/g, "").length > 0
-            ).map((item, idx, NER) => {
-              return (
-                <span
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gridGap: "4px",
-                  }}
-                  key={idx * Math.random() * 100}
-                >
-                  {/* <img src={IngredientIcon} height="15px" /> */}
-                  {item[0].toUpperCase() + item.substring(1)}
-                  {idx !== NER.length - 1 ? "," : ""}
-                </span>
-              );
-            })}
-          </span>
-        }
-      />
-      <Divider style={{ margin: "12px 0 10px" }} />
-      <Meta
-        style={{
-          textAlign: "left",
-          padding: "7px",
-        }}
-        description={
-          <Row justify="space-between">
-            <Col
-              span={12}
-              style={{
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              {" "}
-              <span>
-                <img
-                  src={require("./assets/images/external-link.png").default}
-                  height="25px"
-                />
-                <a href={"https://" + item.link} target="_blank">
-                  Recipe Origin
-                </a>
-              </span>
-            </Col>
-            <Col span={8} pull={4}>
-              <Tooltip title="See Full Recipe!">
-                <Button
-                  onClick={() =>
-                    setfullRecipe({
-                      isModalVisible: true,
-                      recipeItem: item,
-                    })
-                  }
-                  style={{
-                    paddingLeft: "10px",
-                  }}
-                  icon={
-                    <img
-                      src={OvenGloveIcon}
-                      height="20px"
-                      style={{
-                        marginRight: "7px",
-                      }}
-                    />
-                  }
-                >
-                  View Recipe
-                </Button>
-              </Tooltip>
-            </Col>
-          </Row>
-        }
-      />
-    </Card>
-  </Col>
-);
-
-const { CheckableTag } = Tag;
-let currentPage = 0;
-export default () => {
-  const [isMobileView, setIsMobileView] = useState(false);
+const App = () => {
+  const [isMobileView, setIsMobileView] = useState(false); //state variable(boolean) depicting mobile view or otherwise
   const [fullRecipe, setfullRecipe] = useState({
-    isModalVisible: false,
-    recipeItem: {},
+    isModalVisible: false, //boolean for full-recipe modal visibility
+    recipeItem: {}, // object holding current recipe opened in modal for full-recipe
   });
-
-  const [showFilterOptions, setShowFilterOptions] = useState(false);
-  const [showAllFilters, setShowAllFilters] = useState(false);
+  const [showFilterOptions, setShowFilterOptions] = useState(false); //used in mobile view to show/ hide filter options (ingredient in this case)
+  const [showAllFilters, setShowAllFilters] = useState(false); //used for displaying all available filters at once
 
   useEffect(() => {
+    // using resize listener for applying mobile responsiveness programatically
     if (window?.innerWidth <= 600) {
       !isMobileView && setIsMobileView(true);
     }
@@ -306,7 +61,7 @@ export default () => {
           <div>
             <h2>
               React Searchbox Demo{" "}
-              <span style={{ fontSize: "1rem" }}>
+              <span>
                 <a
                   href="https://docs.appbase.io/docs/reactivesearch/react-searchbox/apireference/"
                   target="_blank"
@@ -319,8 +74,8 @@ export default () => {
 
             <Row gutter="24" justify="center">
               <Col xs={20} sm={20} md={24} lg={16} xl={16}>
+                {/* Main searchbox for searching recipes */}
                 <SearchBox
-                  clearFiltersOnQueryChange
                   id="search-component"
                   dataField={[
                     {
@@ -353,31 +108,23 @@ export default () => {
                   iconPosition="left"
                   style={{ paddingBottom: 10 }}
                   queryFormat="and"
-                ></SearchBox>
-                <QuerySuggestions />{" "}
+                />
+                {/* Recipe Suggestions Component */}
+                <QuerySuggestions />
               </Col>
             </Row>
-            <Row justify="center" gutter={(24, 24)} className="filter-row">
+            <Row justify="center" gutter={(24, 24)} className="result-row">
               <Col
                 xs={20}
                 sm={20}
                 md={24}
                 lg={6}
                 xl={6}
-                style={
-                  isMobileView &&
-                  showFilterOptions && {
-                    position: "fixed",
-                    zIndex: 2,
-                    background: "rgba(255 ,255, 255 , .9)",
-                    height: "100vh",
-                    top: 0,
-                    width: "100vw",
-                    maxWidth: "100%",
-                    paddingTop: "20px",
-                    overflowY: "scroll",
-                  }
-                }
+                className={`${
+                  isMobileView && showFilterOptions
+                    ? "show-ingredients-full-screen"
+                    : ""
+                }`}
               >
                 {isMobileView && !showFilterOptions && (
                   <Button
@@ -386,18 +133,15 @@ export default () => {
                     {showFilterOptions ? "Hide" : "Show"} Filters
                   </Button>
                 )}
+
+                {/* Searchbox for searching through ingredients */}
                 <SearchBox
                   queryFormat="and"
-                  clearFiltersOnQueryChange
-                  customQuery={() => ({
-                    timeout: "1s",
-                  })}
-                  className={
+                  className={`${
                     !showFilterOptions && isMobileView
                       ? "isIngredientHidden"
                       : ""
-                  }
-                  autosuggest={false}
+                  }`}
                   id="filter-search-component"
                   dataField={[
                     {
@@ -413,7 +157,7 @@ export default () => {
                       }}
                     >
                       <span>Ingredient Filter</span>
-                      {window.innerWidth < 600 && (
+                      {isMobileView && (
                         <Button
                           onClick={() =>
                             setShowFilterOptions(!showFilterOptions)
@@ -425,7 +169,7 @@ export default () => {
                     </div>
                   }
                   placeholder="Try searching : 'salt' or 'sugar'"
-                  autosuggest={false}
+                  autosuggest={true}
                   debounce={100}
                   fuzziness="AUTO"
                   showClear
@@ -435,6 +179,7 @@ export default () => {
                   enablePredictiveSuggestions={true}
                 />
 
+                {/* Search component displaying ingredient filters facets */}
                 <SearchComponent
                   id="ingredient-filter"
                   type="term"
@@ -447,130 +192,35 @@ export default () => {
                     and: ["search-component", "filter-search-component"],
                   }}
                   value={[]}
-                  render={({
-                    aggregationData,
-                    loading,
-                    value,
-                    setValue,
-                    query,
-                  }) => {
-                    const responseValue = value
+                  render={({ aggregationData, loading, value, setValue }) => {
+                    //value prop gives us all the selected filters(ingredients)
+                    const selectedFilters = value // storing selected filters' names in a separate variable
                       ? value.map((item) => item.toLowerCase())
                       : [];
-                    const sortedFilters = [];
+                    const sortedFilters = []; // an array that would have sorted filters' list based on selected/ not-selected
+
+                    //applying logic for having the selected filters always in front of array and rest following them
                     aggregationData?.data?.map((item) => {
-                      if (!responseValue.includes(item._key.toLowerCase())) {
+                      if (!selectedFilters.includes(item._key.toLowerCase())) {
                         sortedFilters.push(item);
                       } else {
                         sortedFilters.unshift(item);
                       }
                     });
 
+                    //Component for rendering Ingredient Filters
                     return (
-                      <div
-                        className={
-                          !showFilterOptions && isMobileView
-                            ? " filter-container isIngredientHidden"
-                            : "filter-container"
-                        }
-                      >
-                        {loading ? (
-                          <Row
-                            justify="center"
-                            align="middle"
-                            gutter={[24, 24]}
-                            style={{ width: "100%", height: "200px" }}
-                          >
-                            {" "}
-                            <Col span={24}>
-                              <Spin spinning={loading} size="large"></Spin>
-                            </Col>
-                          </Row>
-                        ) : (
-                          <>
-                            {sortedFilters
-                              .slice(
-                                0,
-                                Math.max(
-                                  7,
-                                  showAllFilters || isMobileView
-                                    ? sortedFilters.length
-                                    : 7
-                                )
-                              )
-                              .map((item) => {
-                                const isChecked = value
-                                  ? responseValue.includes(
-                                      item._key.toLowerCase()
-                                    )
-                                  : false;
-                                return (
-                                  <div className="list-item" key={item._key}>
-                                    <CheckableTag
-                                      checked={isChecked}
-                                      style={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gridGap: "6px",
-                                        textTransform: "capitalize",
-                                        fontSize: "13px",
-                                        borderColor: "#1b90ff",
-                                        ...(!isChecked && {
-                                          backgroundColor: "rgb(256,256,256)",
-                                        }),
-                                      }}
-                                      onChange={(checked) => {
-                                        let values = value || [];
-                                        if (!checked) {
-                                          values = [
-                                            ...values.filter(
-                                              (valueItem) =>
-                                                valueItem != item._key
-                                            ),
-                                          ];
-                                        } else {
-                                          values.push(item._key);
-                                        }
-                                        // Set filter value and trigger custom query
-                                        setValue(values, {
-                                          triggerDefaultQuery: false,
-                                          triggerCustomQuery: true,
-                                          stateChanges: true,
-                                        });
-                                      }}
-                                    >
-                                      {isChecked ? (
-                                        <MinusCircleTwoTone />
-                                      ) : (
-                                        <PlusCircleTwoTone />
-                                      )}{" "}
-                                      {`${item._key} ( ${new Intl.NumberFormat(
-                                        "en-US",
-                                        {
-                                          maximumSignificantDigits: 3,
-                                        }
-                                      ).format(item._doc_count)} )`}
-                                    </CheckableTag>
-                                  </div>
-                                );
-                              })}
-
-                            {!isMobileView && (
-                              <Col span={24}>
-                                <Button
-                                  type="primary"
-                                  onClick={() =>
-                                    setShowAllFilters(!showAllFilters)
-                                  }
-                                  style={{ fontWeight: "bold" }}
-                                >
-                                  Show {showAllFilters ? "Less" : "More"}
-                                </Button>
-                              </Col>
-                            )}
-                          </>
-                        )}
-                      </div>
+                      <FiltersRenderer
+                        showFilterOptions={showFilterOptions}
+                        showAllFilters={showAllFilters}
+                        isMobileView={isMobileView}
+                        loading={loading}
+                        value={value}
+                        selectedFilters={selectedFilters}
+                        sortedFilters={sortedFilters}
+                        setValue={setValue}
+                        setShowAllFilters={setShowAllFilters}
+                      />
                     );
                   }}
                 />
@@ -585,127 +235,36 @@ export default () => {
                     return { track_total_hits: true };
                   }}
                   dataField={["title"]}
-                  aggregationField="title.keyword"
+                  distinctField="title.keyword"
                   size={10}
                   aggregationSize={10}
                   react={{
                     and: ["search-component", "ingredient-filter"],
                   }}
-                  subscribeTo={["aggregationData", "requestStatus"]}
                   preserveResults={true}
                 >
                   {(props) => {
-                    const {
-                      results,
-                      loading,
-                      size,
-                      setValue,
-                      setFrom,
-                      aggregationData,
-                      setAfter,
-                      from,
-                      after,
-                    } = props;
-                    console.log("props", results);
-                    // console.log("aggregationData", aggregationData);
-                    console.log("results", results);
+                    const { results, loading, size, setFrom } = props;
 
-                    const promotedData = !!results.promoted
+                    //getting promoted results separately from normal results
+                    const promotedData = results?.promoted
                       ? [
                           ...results.promotedData.map((element) => {
                             return element.doc;
                           }),
                         ]
                       : [];
-                    const sourceChoices = [results, aggregationData];
-
-                    // use
-                    // choiceIndex = 0 --------> Results
-                    // choiceIndex = 1 --------> Aggregations
-                    const choiceIndex = 1;
 
                     return (
-                      <>
-                        {" "}
-                        {!sourceChoices[choiceIndex].data.length ? (
-                          <Empty
-                            description={
-                              <span>
-                                {loading
-                                  ? "Fetching Data!"
-                                  : "No Results Found!"}
-                              </span>
-                            }
-                          ></Empty>
-                        ) : (
-                          <Col span={24} className="result-time-status">
-                            {" "}
-                            <p>
-                              <strong style={{ color: "red" }}>
-                                {new Intl.NumberFormat("en-US", {
-                                  maximumSignificantDigits: 3,
-                                }).format(results.numberOfResults)}
-                              </strong>{" "}
-                              results found in{" "}
-                              <strong style={{ color: "red" }}>
-                                {typeof results.time == "object"
-                                  ? results.time.took
-                                  : results.time}
-                              </strong>{" "}
-                              ms
-                            </p>
-                          </Col>
-                        )}
-                        <InfiniteScrollContainer
-                          callNextPage={() => {
-                            if (
-                              Math.floor(results.numberOfResults / size) >=
-                              currentPage
-                            ) {
-                              currentPage++;
-                              choiceIndex == 0
-                                ? setFrom(currentPage * size)
-                                : setAfter?.(aggregationData.afterKey);
-                            }
-                          }}
-                          loading={loading}
-                          choiceIndex={choiceIndex}
-                        >
-                          <div className="result-list-container">
-                            <Spin spinning={loading}>
-                              <Row
-                                gutter={[16, 16]}
-                                justify="start"
-                                wrap
-                                justify="flex-start"
-                                className="result-row"
-                              >
-                                {promotedData?.map((promotedItem) => (
-                                  <PromotedCardItem
-                                    key={promotedItem.id}
-                                    item={promotedItem}
-                                  />
-                                ))}
-                                {sourceChoices[choiceIndex].data?.map(
-                                  (itemRaw) => {
-                                    const item =
-                                      choiceIndex == 1
-                                        ? itemRaw.hits.hits[0]._source
-                                        : itemRaw;
-                                    return (
-                                      <CardItem
-                                        key={item.id * Math.random()}
-                                        item={item}
-                                        setfullRecipe={setfullRecipe}
-                                      />
-                                    );
-                                  }
-                                )}
-                              </Row>
-                            </Spin>{" "}
-                          </div>
-                        </InfiniteScrollContainer>
-                      </>
+                      //Component for rendering recipe results
+                      <ResultsRenderer
+                        results={results}
+                        promotedData={promotedData}
+                        loading={loading}
+                        size={size}
+                        setFrom={setFrom}
+                        setfullRecipe={setfullRecipe}
+                      />
                     );
                   }}
                 </SearchComponent>
@@ -714,6 +273,8 @@ export default () => {
           </div>
         </SearchBase>
       </Layout>
+
+      {/* Recipe full view modal */}
       <RecipeFullView
         isModalVisible={fullRecipe.isModalVisible}
         recipeItem={fullRecipe.recipeItem}
@@ -722,3 +283,5 @@ export default () => {
     </>
   );
 };
+
+export default App;

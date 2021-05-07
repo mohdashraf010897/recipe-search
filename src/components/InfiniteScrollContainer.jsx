@@ -1,8 +1,8 @@
-import { Spin } from "antd";
 import React from "react";
 import { SearchContext } from "@appbaseio/react-searchbox";
+import { Spin } from "antd";
+import "./../styles/infiniteScrollContainer.css";
 
-let observer;
 let prevY = 0;
 class InfiniteScrollContainer extends React.Component {
   static contextType = SearchContext;
@@ -29,36 +29,18 @@ class InfiniteScrollContainer extends React.Component {
     this.observer.observe(this.loadingRef.current);
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    //aggregations
-
-    if (this.props.choiceIndex == 1) {
-      if (
-        !this.context._components["result-component"].after?.["title.keyword"]
-      ) {
-        document.getElementById("under-observation").scrollTo(0, 0);
-      }
-    } else {
-      if (this.context._components["result-component"].from == 0) {
-        document.getElementById("under-observation").scrollTo(0, 0);
-      }
+  componentDidUpdate() {
+    if (this.context._components["result-component"].from == 0) {
+      document.getElementById("under-observation").scrollTo(0, 0);
     }
   }
 
   render() {
-    const loadingCSS = {
-      height: "100px",
-      margin: "30px",
-      padding: 50,
-    };
-    const { children, callNextPage, loading } = this.props;
+    const { children, loading } = this.props;
     return (
-      <div
-        id="under-observation"
-        style={{ maxHeight: "70vh", overflowY: "scroll", overflowX: "hidden" }}
-      >
+      <div id="under-observation">
         <>{children}</>
-        <div ref={this.loadingRef} style={loadingCSS}>
+        <div ref={this.loadingRef} className="loading-spinner">
           <Spin
             delay={500}
             spinning={loading}

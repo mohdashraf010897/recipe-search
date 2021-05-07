@@ -50,9 +50,26 @@ body {
   padding: 3rem;
 }
 
-.filter-row {
+.layout > div > h2 > span {
+  font-size: 1rem;
+}
+
+.result-row {
   padding-top: 70px;
 }
+
+.result-row .ant-col:first-child.show-ingredients-full-screen {
+  position: fixed;
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.9);
+  height: 100vh;
+  top: 0;
+  width: 100vw;
+  max-width: 100%;
+  padding-top: 20px;
+  overflow-y: scroll;
+}
+
 .result-time-status {
   z-index: 1;
   font-size: 1rem;
@@ -65,17 +82,13 @@ body {
   padding-top: 70px;
 }
 
-.isIngredientHidden {
-  display: none !important;
-}
-
 @media screen and (max-width: 600px) {
   .layout {
     padding: 0;
     height: 100vh;
     overflow: hidden;
   }
-  .filter-row {
+  .result-row {
     padding-top: 17px;
   }
   .result-time-status {
@@ -94,10 +107,4 @@ body {
 
 .search-icon {
   fill: black !important;
-}
-
-.filter-container {
-  display: flex;
-  flex-wrap: wrap;
-  grid-gap: 10px;
 }

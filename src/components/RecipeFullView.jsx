@@ -1,5 +1,5 @@
 import Modal from "antd/lib/modal/Modal";
-import React, { useState, useEffect } from "react";
+import React from "react";
 import IngredientIcon from "./../assets/images/ingredients.svg";
 import CookingIcon from "./../assets/images/cooking.svg";
 
@@ -15,15 +15,11 @@ const RecipeFullView = ({
         title={
           <span
             style={{
-              // color: `hsla(${
-              //   Math.random() * 360
-              // }, 100%, 50%, 1)`,
               height: "auto",
               whiteSpace: "pre-wrap",
               marginBottom: "0px",
               lineHeight: "22px",
               fontSize: "14px",
-              // paddingTop: "14px",
               color: "#ff7f7f",
             }}
             dangerouslySetInnerHTML={{
@@ -39,7 +35,11 @@ const RecipeFullView = ({
               src={require("./../assets/images/external-link.png").default}
               height="35px"
             />
-            <a href={"https://" + recipeItem.link} target="_blank">
+            <a
+              href={"https://" + recipeItem.link}
+              target="_blank"
+              rel="noreferrer"
+            >
               Recipe Origin
             </a>
           </span>
@@ -58,6 +58,7 @@ const RecipeFullView = ({
             {recipeItem.ingredients.map((item) => {
               return (
                 <li
+                  key={item}
                   style={{
                     display: "flex",
                     alignItems: "center",
@@ -85,6 +86,7 @@ const RecipeFullView = ({
             {recipeItem.directions.map((item) => {
               return (
                 <li
+                  key={item}
                   style={{
                     display: "flex",
                     alignItems: "center",
