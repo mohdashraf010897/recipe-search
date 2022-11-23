@@ -1,4 +1,4 @@
-# React Searchbox App
+# Recipe Search App
 
 ## Structure:
 
